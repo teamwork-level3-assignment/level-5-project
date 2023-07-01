@@ -1,4 +1,4 @@
-package com.sparta.lv3assignment.repository;
+package com.sparta.lv3assignment.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
