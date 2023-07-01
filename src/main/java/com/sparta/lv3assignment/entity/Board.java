@@ -2,7 +2,6 @@ package com.sparta.lv3assignment.entity;
 
 
 import com.sparta.lv3assignment.dto.BoardRequestDto;
-import com.sparta.lv3assignment.repository.Timestamped;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
