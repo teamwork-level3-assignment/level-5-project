@@ -60,12 +60,7 @@ public class BoardService {
     @Transactional
     public Long updateBoard(Long id, BoardRequestDto requestDto) {
         Board board = findBoard(id);
-        if(board.getPasswd().equals(requestDto.getPasswd())){
-            board.update(requestDto);
-        }else{
-            throw new IllegalArgumentException("선택한 글이 존재하지 않습니다.");
-        }
-
+        board.update(requestDto);
         return id;
     }
 
@@ -77,12 +72,7 @@ public class BoardService {
      */
     public Long deleteBoard(Long id, BoardRequestDto requestDto) {
         Board board = findBoard(id);
-        if(board.getPasswd().equals(requestDto.getPasswd())){
-            boardRepository.delete(board);
-        }else{
-            throw  new IllegalArgumentException("선택한 글이 존재하지 않습니다.");
-        }
-
+        boardRepository.delete(board);
         return id;
     }
 

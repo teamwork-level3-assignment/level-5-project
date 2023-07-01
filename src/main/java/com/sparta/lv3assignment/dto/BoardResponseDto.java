@@ -11,7 +11,6 @@ public class BoardResponseDto {
     private String title;               //제목
     private String username;                //이름
     private String contents;            //내용
-    private String passwd;              //비밀번호
     private LocalDateTime createdAt;    //생성날짜
     private LocalDateTime modifiedAt;   //수정날짜
 
@@ -20,7 +19,6 @@ public class BoardResponseDto {
         this.title = board.getTitle();
         this.username = board.getUsername();
         this.contents = board.getContents();
-        this.passwd = board.getPasswd();
         this.createdAt = board.getCreatedAt();
         this.modifiedAt = board.getModifiedAt();
     }
