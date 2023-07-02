@@ -2,18 +2,24 @@ package com.sparta.lv3assignment.service;
 
 
 import com.sparta.lv3assignment.dto.LoginRequestDto;
+import com.sparta.lv3assignment.dto.LoginResponseDto;
 import com.sparta.lv3assignment.dto.SignupRequestDto;
+import com.sparta.lv3assignment.dto.SignupResponseDto;
 import com.sparta.lv3assignment.entity.User;
 import com.sparta.lv3assignment.entity.UserRoleEnum;
 import com.sparta.lv3assignment.jwt.JwtUtil;
 import com.sparta.lv3assignment.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Service
@@ -25,10 +31,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
 
-    public Map<String, Object> signup(SignupRequestDto dto) {
-        Map<String, Object> map = new HashMap<>();
-        String msg;
-        int status;
+    public ResponseEntity<SignupResponseDto> signup(SignupRequestDto dto) {
         String username = dto.getUsername();
         String password = dto.getPassword();
         String authToken = dto.getAuthToken();
@@ -44,20 +47,13 @@ public class UserService {
                 auth = UserRoleEnum.ADMIN;
             }
             userRepository.save(new User(username, encodePassword, auth));
-            msg = "회원가입 성공";
-            status = HttpServletResponse.SC_OK;
-            map.put("msg", msg);
-            map.put("status", status);
-            return map;
-        }
 
+            return new ResponseEntity<>(new SignupResponseDto("회원가입 성공", HttpServletResponse.SC_OK), HttpStatus.OK);
+        }
         throw new IllegalArgumentException("중복된 사용자가 존재합니다");
     }
 
-    public Map<String, Object> login(LoginRequestDto dto, HttpServletResponse response) {
-        Map<String, Object> map = new HashMap<>();
-        String msg;
-        int status;
+    public ResponseEntity<LoginResponseDto> login(LoginRequestDto dto, HttpServletResponse response) {
         String username = dto.getUsername();
         String password = dto.getPassword();
 
@@ -74,11 +70,10 @@ public class UserService {
         String token = jwtUtil.createToken(findUser.getUsername(), findUser.getRole());
 
         jwtUtil.addTwtToHeader(token, response);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", StandardCharsets.UTF_8));
 
-        msg = "로그인 성공";
-        status = HttpServletResponse.SC_OK;
-        map.put("msg", msg);
-        map.put("status", status);
-        return map;
+
+        return new ResponseEntity<>(new LoginResponseDto("로그인 성공", HttpServletResponse.SC_OK), headers, HttpStatus.OK);
     }
 }

@@ -40,6 +40,7 @@ public class JwtUtil {
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
 
+
     //해당 클래스가 만들어질 때, 일종의 생성자처럼 활용되는 것
     @PostConstruct
     public void init() {
