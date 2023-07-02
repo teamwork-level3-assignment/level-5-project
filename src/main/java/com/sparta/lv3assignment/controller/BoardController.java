@@ -2,8 +2,10 @@ package com.sparta.lv3assignment.controller;
 
 import com.sparta.lv3assignment.dto.BoardRequestDto;
 import com.sparta.lv3assignment.dto.BoardResponseDto;
+import com.sparta.lv3assignment.entity.Message;
 import com.sparta.lv3assignment.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,22 +50,24 @@ public class BoardController {
     }
     /**
      * 게시판 글 업데이트
+     *
      * @param id
      * @param requestDto
      * @return
      */
     @PutMapping("/boards/{id}")
-    public Long updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
+    public BoardResponseDto updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
         return boardService.updateBoard(id, requestDto);
     }
 
     /**
      * 게시판 글 삭제
+     *
      * @param id
      * @return
      */
     @DeleteMapping("/boards/{id}")
-    public Long deleteBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
-        return boardService.deleteBoard(id, requestDto);
+    public ResponseEntity<Message> deleteBoard(@PathVariable Long id) {
+        return boardService.deleteBoard(id);
     }
 }

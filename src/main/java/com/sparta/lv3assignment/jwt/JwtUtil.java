@@ -84,13 +84,10 @@ public class JwtUtil {
     public void addTwtToHeader(String token, HttpServletResponse response) {
         try {
             token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20");
-
             response.setHeader(AUTHORIZATION_HEADER, token);
-
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-
     }
 
 
