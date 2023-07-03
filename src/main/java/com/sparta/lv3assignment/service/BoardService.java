@@ -46,7 +46,9 @@ public class BoardService {
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+                .orElseThrow(() -> {
+                    throw new NullPointerException("해당 사용자가 없습니다");
+                });
 
         // RequestDto -> Entity
         Board board = new Board(requestDto, user);
@@ -98,10 +100,12 @@ public class BoardService {
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+        System.out.println(user.getRole().getAuthority() + " : " + user.getRole());
 
         // 글 존재 유무
         Board board = findBoard(id);
-        if (user.getUsername().equals(board.getUser().getUsername())) {
+        if (user.getUsername().equals(board.getUser().getUsername())
+                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
             board.update(requestDto);
             board = boardRepository.saveAndFlush(board);
         } else {
@@ -116,10 +120,8 @@ public class BoardService {
      * @param id
      * @return
      */
-    public ResponseEntity<Message> deleteBoard(Long id) {
-        Message message = new Message();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+    public void deleteBoard(Long id) {
+
         Claims info = getClaims();
         String username = info.getSubject();
 
@@ -129,14 +131,15 @@ public class BoardService {
 
         // 글 존재 유무
         Board board = findBoard(id);
-        if (user.getUsername().equals(board.getUser().getUsername())) {
+
+        if (user.getUsername().equals(board.getUser().getUsername())
+                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
+            System.out.println("delet method 들어옴");
             boardRepository.delete(board);
-            message.setStatus(StatusEnum.OK);
-            message.setMessage("게시글 삭제 성공");
         } else {
+            System.out.println("여기오나?");
             throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
-        return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     /**
@@ -158,6 +161,7 @@ public class BoardService {
      */
     private Claims getClaims() {
         String token = jwtUtil.getTokenFromHeader(req);
+        token = jwtUtil.substringToken(token);
         if (!jwtUtil.validateToken(token)) {
             throw new IllegalArgumentException("Token Error");
         }

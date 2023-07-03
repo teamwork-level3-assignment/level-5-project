@@ -3,8 +3,10 @@ package com.sparta.lv3assignment.controller;
 import com.sparta.lv3assignment.dto.CommentRequestDto;
 import com.sparta.lv3assignment.dto.CommentResponseDto;
 import com.sparta.lv3assignment.entity.Message;
+import com.sparta.lv3assignment.entity.StatusEnum;
 import com.sparta.lv3assignment.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,19 +27,29 @@ public class CommentController {
     }
 
     @PutMapping("/boards/{boardId}/comments/{commentsId}")
-    public CommentResponseDto updateCommentsInBoard(
+    public ResponseEntity<Message> updateCommentsInBoard(
             @PathVariable Long boardId,
             @PathVariable Long commentsId,
             @RequestBody CommentRequestDto requestDto
     ) {
-        return commentService.updateCommentInBoard(boardId, commentsId, requestDto);
+        try {
+            CommentResponseDto commentResponseDto = commentService.updateCommentInBoard(boardId, commentsId, requestDto);
+            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), commentResponseDto), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/boards/{boardId}/comments/{commentsId}")
     public ResponseEntity<Message> deleteCommentInBoard(
             @PathVariable Long boardId,
             @PathVariable Long commentsId
-    ){
-        return commentService.deleteCommentInBoard(boardId, commentsId);
+    ) {
+        try {
+            commentService.deleteCommentInBoard(boardId, commentsId);
+            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
+        }
     }
 }

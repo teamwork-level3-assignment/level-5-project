@@ -8,6 +8,7 @@ import com.sparta.lv3assignment.jwt.JwtUtil;
 import com.sparta.lv3assignment.repository.BoardRepository;
 import com.sparta.lv3assignment.repository.CommentRepository;
 import com.sparta.lv3assignment.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,8 @@ public class CommentService {
     public CommentResponseDto createCommentsInBoard(Long boardId, CommentRequestDto requestDto) {
 
         // 누구인지 확인
-        String token = jwtUtil.getTokenFromHeader(req);
-        String username = jwtUtil.getUserInfoFromToken(token).getSubject();
+        Claims info = getClaims();
+        String username = info.getSubject();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User user = userRepository.findByUsername(username)
@@ -58,8 +59,8 @@ public class CommentService {
     public CommentResponseDto updateCommentInBoard(Long boardId, Long commentsId, CommentRequestDto requestDto) {
 
         // 누구인지 확인
-        String token = jwtUtil.getTokenFromHeader(req);
-        String username = jwtUtil.getUserInfoFromToken(token).getSubject();
+        Claims info = getClaims();
+        String username = info.getSubject();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User user = userRepository.findByUsername(username)
@@ -73,7 +74,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUser().getUsername().equals(user.getUsername())) {
+        if (comment.getUser().getUsername().equals(user.getUsername())
+                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
             comment.update(requestDto);
             Comment savedComment = commentRepository.saveAndFlush(comment);
             return new CommentResponseDto(savedComment);
@@ -83,11 +85,11 @@ public class CommentService {
     }
 
 
-    public ResponseEntity<Message> deleteCommentInBoard(Long boardId, Long commentsId) {
+    public void deleteCommentInBoard(Long boardId, Long commentsId) {
 
         // 누구인지 확인
-        String token = jwtUtil.getTokenFromHeader(req);
-        String username = jwtUtil.getUserInfoFromToken(token).getSubject();
+        Claims info = getClaims();
+        String username = info.getSubject();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User user = userRepository.findByUsername(username)
@@ -101,21 +103,27 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUser().getUsername().equals(user.getUsername())) {
+        if (comment.getUser().getUsername().equals(user.getUsername())
+                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
             try {
                 commentRepository.delete(comment);
-                // 성공 Message 객체 생성
-                Message message = new Message(StatusEnum.OK, "해당 댓글이 삭제되었습니다.", comment);
-                return new ResponseEntity<>(message, HttpStatus.OK);
 
             } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
                 log.error(e.getMessage());
-                // 실패 Message 객체 생성
-                Message message = new Message(StatusEnum.NOT_FOUND, "알 수 없는 이유로 삭제할 수 없습니다.", null);
-                return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new IllegalArgumentException("알 수 없는 이유로 삭제할 수 없습니다. 입력한 정보를 확인하세요");
             }
         } else {
             throw new IllegalArgumentException("해당 댓글의 작성자가 아닙니다.");
         }
+    }
+
+    private Claims getClaims() {
+        String token = jwtUtil.getTokenFromHeader(req);
+        token = jwtUtil.substringToken(token);
+        if (!jwtUtil.validateToken(token)) {
+            throw new IllegalArgumentException("Token Error");
+        }
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        return info;
     }
 }
