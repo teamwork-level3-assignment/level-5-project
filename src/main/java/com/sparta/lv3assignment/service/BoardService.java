@@ -2,12 +2,10 @@ package com.sparta.lv3assignment.service;
 
 import com.sparta.lv3assignment.dto.BoardRequestDto;
 import com.sparta.lv3assignment.dto.BoardResponseDto;
-import com.sparta.lv3assignment.entity.Board;
-import com.sparta.lv3assignment.entity.Message;
-import com.sparta.lv3assignment.entity.StatusEnum;
-import com.sparta.lv3assignment.entity.User;
+import com.sparta.lv3assignment.entity.*;
 import com.sparta.lv3assignment.jwt.JwtUtil;
 import com.sparta.lv3assignment.repository.BoardRepository;
+import com.sparta.lv3assignment.repository.CommentRepository;
 import com.sparta.lv3assignment.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,9 +29,9 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    private HttpServletRequest req;
+    private final HttpServletRequest req;
 
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     /**
      * 게시판 글 생성
@@ -68,7 +66,9 @@ public class BoardService {
     @Transactional(readOnly = true)
     public BoardResponseDto getBoard(Long id) {
         log.info("특정게시글 조회 쿼리");
+        // 특정 게시글과 그와 관련된 댓글 가지고 오기
         Board board = findBoard(id);
+
         log.info("LAZY 옵션주엇을 때 날라가는 쿼리");
         return new BoardResponseDto(board);
     }
@@ -158,7 +158,6 @@ public class BoardService {
      */
     private Claims getClaims() {
         String token = jwtUtil.getTokenFromHeader(req);
-        token = jwtUtil.substringToken(token);
         if (!jwtUtil.validateToken(token)) {
             throw new IllegalArgumentException("Token Error");
         }

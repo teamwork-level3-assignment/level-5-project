@@ -5,6 +5,7 @@ import com.sparta.lv3assignment.dto.BoardResponseDto;
 import com.sparta.lv3assignment.entity.Message;
 import com.sparta.lv3assignment.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +13,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+
 public class BoardController {
 
     private final BoardService boardService;
 
-    public BoardController(BoardService boardService, HttpServletRequest req) {
+    public BoardController(BoardService boardService) {
         this.boardService = boardService;
     }
 

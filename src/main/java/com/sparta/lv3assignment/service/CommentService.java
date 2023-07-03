@@ -3,21 +3,23 @@ package com.sparta.lv3assignment.service;
 
 import com.sparta.lv3assignment.dto.CommentRequestDto;
 import com.sparta.lv3assignment.dto.CommentResponseDto;
-import com.sparta.lv3assignment.entity.Board;
-import com.sparta.lv3assignment.entity.Comment;
-import com.sparta.lv3assignment.entity.Message;
-import com.sparta.lv3assignment.entity.StatusEnum;
+import com.sparta.lv3assignment.entity.*;
 import com.sparta.lv3assignment.jwt.JwtUtil;
 import com.sparta.lv3assignment.repository.BoardRepository;
 import com.sparta.lv3assignment.repository.CommentRepository;
+import com.sparta.lv3assignment.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 
 
 @Slf4j
@@ -29,6 +31,8 @@ public class CommentService {
     private final JwtUtil jwtUtil;
     private final HttpServletRequest req;
     private final BoardRepository boardRepository;
+    private final UserRepository userRepository;
+    private final HttpServletResponse response;
 
     public CommentResponseDto createCommentsInBoard(Long boardId, CommentRequestDto requestDto) {
 
@@ -36,12 +40,17 @@ public class CommentService {
         String token = jwtUtil.getTokenFromHeader(req);
         String username = jwtUtil.getUserInfoFromToken(token).getSubject();
 
+        // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+
+
         // boardId로 실제로 저 게시글이 존재하는지 확인하기(DB에 있는지)
         Board findBoard = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다"));
 
         // 댓글을 저장
-        Comment comment = commentRepository.save(new Comment(username, findBoard, requestDto));
+        Comment comment = commentRepository.save(new Comment(user, findBoard, requestDto));
         return new CommentResponseDto(comment);
     }
 
@@ -52,15 +61,19 @@ public class CommentService {
         String token = jwtUtil.getTokenFromHeader(req);
         String username = jwtUtil.getUserInfoFromToken(token).getSubject();
 
+        // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+
         // boardId로 실제로 저 게시글이 존재하는지 확인하기(DB에 있는지)
-        Board findBoard = boardRepository.findById(boardId)
+        boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다"));
 
         // commentsId로 실제로 저 댓글이 존재하는지 확인하기(DB에 있는지)
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUsername().equals(username)) {
+        if (comment.getUser().getUsername().equals(user.getUsername())) {
             comment.update(requestDto);
             Comment savedComment = commentRepository.saveAndFlush(comment);
             return new CommentResponseDto(savedComment);
@@ -76,6 +89,10 @@ public class CommentService {
         String token = jwtUtil.getTokenFromHeader(req);
         String username = jwtUtil.getUserInfoFromToken(token).getSubject();
 
+        // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+
         // boardId로 실제로 저 게시글이 존재하는지 확인하기(DB에 있는지)
         boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다"));
@@ -84,7 +101,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUsername().equals(username)) {
+        if (comment.getUser().getUsername().equals(user.getUsername())) {
             try {
                 commentRepository.delete(comment);
                 // 성공 Message 객체 생성
