@@ -18,14 +18,18 @@ public class Board extends Timestamped {
     private Long id;
     @Column(name = "title", nullable = false)
     private String title;
-    @Column(name = "username", nullable = false)
-    private String username;
+//    @Column(name = "username", nullable = false)
+//    private String username;
     @Column(name = "contents", nullable = false, length = 500)
     private String contents;
 
-    public Board(BoardRequestDto requestDto, String username) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Board(BoardRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
-        this.username = username;
+        this.user = user;
         this.contents = requestDto.getContents();
     }
 
