@@ -148,19 +148,17 @@ public class JwtUtil {
 
     public String getTokenFromHeader(HttpServletRequest request) {
         try {
-//            String token = URLDecoder.decode(request.getHeader(AUTHORIZATION_HEADER), "utf-8");
 
             String token = request.getHeader(AUTHORIZATION_HEADER);
-
             if (token != null) {
 
                 token = URLDecoder.decode(token, "utf-8");
-
-                String tokenValue = substringToken(token);
-                if (!validateToken(tokenValue)) {
-                    return null;
-                }
-                return tokenValue;
+//
+//                String tokenValue = substringToken(token);
+//                if (!validateToken(tokenValue)) {
+//                    return null;
+//                }
+                return token;
             }
         }catch(UnsupportedEncodingException e){
             return null;
