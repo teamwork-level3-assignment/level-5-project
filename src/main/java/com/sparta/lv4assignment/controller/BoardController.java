@@ -4,9 +4,11 @@ import com.sparta.lv4assignment.dto.BoardRequestDto;
 import com.sparta.lv4assignment.dto.BoardResponseDto;
 import com.sparta.lv4assignment.entity.Message;
 import com.sparta.lv4assignment.entity.StatusEnum;
+import com.sparta.lv4assignment.filter.UserDetailsImpl;
 import com.sparta.lv4assignment.service.BoardService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,10 +31,10 @@ public class BoardController {
      * @return
      */
     @PostMapping("/boards")
-    public ResponseEntity<Message> createBoard(@RequestBody BoardRequestDto requestDto) {
+    public ResponseEntity<Message> createBoard(@RequestBody BoardRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         try {
-            BoardResponseDto board = boardService.createBoard(requestDto);
+            BoardResponseDto board = boardService.createBoard(requestDto, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), board), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
@@ -70,9 +72,13 @@ public class BoardController {
      * @return
      */
     @PutMapping("/boards/{id}")
-    public ResponseEntity<Message> updateBoard(@PathVariable Long id, @RequestBody BoardRequestDto requestDto) {
+    public ResponseEntity<Message> updateBoard(
+            @PathVariable Long id,
+            @RequestBody BoardRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+            ) {
         try {
-            BoardResponseDto boardResponseDto = boardService.updateBoard(id, requestDto);
+            BoardResponseDto boardResponseDto = boardService.updateBoard(id, requestDto, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), boardResponseDto), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
@@ -86,10 +92,9 @@ public class BoardController {
      * @return
      */
     @DeleteMapping("/boards/{id}")
-    public ResponseEntity<Message> deleteBoard(@PathVariable Long id) {
-        System.out.println("BoardController.deleteBoard");
+    public ResponseEntity<Message> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
-            boardService.deleteBoard(id);
+            boardService.deleteBoard(id, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);

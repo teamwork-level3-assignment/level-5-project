@@ -30,14 +30,13 @@ public class CommentService {
     private final UserRepository userRepository;
     private final HttpServletResponse response;
 
-    public CommentResponseDto createCommentsInBoard(Long boardId, CommentRequestDto requestDto) {
+    public CommentResponseDto createCommentsInBoard(Long boardId, CommentRequestDto requestDto, User user) {
 
         // 누구인지 확인
-        Claims info = getClaims();
-        String username = info.getSubject();
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
 
 
@@ -46,19 +45,18 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다"));
 
         // 댓글을 저장
-        Comment comment = commentRepository.save(new Comment(user, findBoard, requestDto));
+        Comment comment = commentRepository.save(new Comment(findUser, findBoard, requestDto));
         return new CommentResponseDto(comment);
     }
 
     @Transactional // 변경감지
-    public CommentResponseDto updateCommentInBoard(Long boardId, Long commentsId, CommentRequestDto requestDto) {
+    public CommentResponseDto updateCommentInBoard(Long boardId, Long commentsId, CommentRequestDto requestDto, User user) {
 
         // 누구인지 확인
-        Claims info = getClaims();
-        String username = info.getSubject();
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
 
         // boardId로 실제로 저 게시글이 존재하는지 확인하기(DB에 있는지)
@@ -69,8 +67,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUser().getUsername().equals(user.getUsername())
-                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
+        if (comment.getUser().getUsername().equals(findUser.getUsername())
+                || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
             comment.update(requestDto);
             Comment savedComment = commentRepository.saveAndFlush(comment);
             return new CommentResponseDto(savedComment);
@@ -80,14 +78,13 @@ public class CommentService {
     }
 
 
-    public void deleteCommentInBoard(Long boardId, Long commentsId) {
+    public void deleteCommentInBoard(Long boardId, Long commentsId, User user) {
 
         // 누구인지 확인
-        Claims info = getClaims();
-        String username = info.getSubject();
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
 
         // boardId로 실제로 저 게시글이 존재하는지 확인하기(DB에 있는지)
@@ -98,8 +95,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentsId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
 
-        if (comment.getUser().getUsername().equals(user.getUsername())
-                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
+        if (comment.getUser().getUsername().equals(findUser.getUsername())
+                || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
             try {
                 commentRepository.delete(comment);
 
@@ -110,15 +107,5 @@ public class CommentService {
         } else {
             throw new IllegalArgumentException("해당 댓글의 작성자가 아닙니다.");
         }
-    }
-
-    private Claims getClaims() {
-        String token = jwtUtil.getTokenFromHeader(req);
-        token = jwtUtil.substringToken(token);
-        if (!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("Token Error");
-        }
-        Claims info = jwtUtil.getUserInfoFromToken(token);
-        return info;
     }
 }

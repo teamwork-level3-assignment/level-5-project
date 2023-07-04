@@ -31,21 +31,21 @@ public class BoardService {
      * 게시판 글 생성
      *
      * @param requestDto
+     * @param user
      * @return
      */
-    public BoardResponseDto createBoard(BoardRequestDto requestDto) {
-        // 토큰 => 유효성 검사 및 사용자 정보 가져오기
-        Claims info = getClaims();
-        String username = info.getSubject();
+    public BoardResponseDto createBoard(BoardRequestDto requestDto, User user) {
+
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     throw new NullPointerException("해당 사용자가 없습니다");
                 });
 
         // RequestDto -> Entity
-        Board board = new Board(requestDto, user);
+        Board board = new Board(requestDto, findUser);
         // DB 저장
         Board saveBoard = boardRepository.save(board);
         // Entity -> ResponseDto
@@ -84,22 +84,21 @@ public class BoardService {
      *
      * @param id
      * @param requestDto
+     * @param user
      * @return
      */
     @Transactional
-    public BoardResponseDto updateBoard(Long id, BoardRequestDto requestDto) {
-        Claims info = getClaims();
-        String username = info.getSubject();
+    public BoardResponseDto updateBoard(Long id, BoardRequestDto requestDto, User user) {
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
-        System.out.println(user.getRole().getAuthority() + " : " + user.getRole());
 
         // 글 존재 유무
         Board board = findBoard(id);
-        if (user.getUsername().equals(board.getUser().getUsername())
-                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
+        if (findUser.getUsername().equals(board.getUser().getUsername())
+                || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
             board.update(requestDto);
             board = boardRepository.saveAndFlush(board);
         } else {
@@ -114,24 +113,21 @@ public class BoardService {
      * @param id
      * @return
      */
-    public void deleteBoard(Long id) {
+    public void deleteBoard(Long id, User user) {
 
-        Claims info = getClaims();
-        String username = info.getSubject();
+        String username = user.getUsername();
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
-        User user = userRepository.findByUsername(username)
+        User findUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
 
         // 글 존재 유무
         Board board = findBoard(id);
 
-        if (user.getUsername().equals(board.getUser().getUsername())
-                || user.getRole().getAuthority().equals("ROLE_ADMIN")) {
-            System.out.println("delet method 들어옴");
+        if (findUser.getUsername().equals(board.getUser().getUsername())
+                || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
             boardRepository.delete(board);
         } else {
-            System.out.println("여기오나?");
             throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
     }
@@ -146,20 +142,5 @@ public class BoardService {
         return boardRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 글이 존재하지 않습니다.")
         );
-    }
-
-    /**
-     * 토큰 유효성 검사 및 사용자 정보 가져오기
-     *
-     * @return
-     */
-    private Claims getClaims() {
-        String token = jwtUtil.getTokenFromHeader(req);
-        token = jwtUtil.substringToken(token);
-        if (!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("Token Error");
-        }
-        Claims info = jwtUtil.getUserInfoFromToken(token);
-        return info;
     }
 }
