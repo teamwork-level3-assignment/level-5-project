@@ -32,15 +32,8 @@ public class BoardController {
      */
     @PostMapping("/boards")
     public ResponseEntity<Message> createBoard(@RequestBody BoardRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        try {
-            BoardResponseDto board = boardService.createBoard(requestDto, userDetails.getUser());
-            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), board), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
-        }
-
+        BoardResponseDto board = boardService.createBoard(requestDto, userDetails.getUser());
+        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), board), HttpStatus.OK);
     }
 
     /**
@@ -76,13 +69,9 @@ public class BoardController {
             @PathVariable Long id,
             @RequestBody BoardRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-            ) {
-        try {
-            BoardResponseDto boardResponseDto = boardService.updateBoard(id, requestDto, userDetails.getUser());
-            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), boardResponseDto), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
-        }
+    ) {
+        BoardResponseDto boardResponseDto = boardService.updateBoard(id, requestDto, userDetails.getUser());
+        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), boardResponseDto), HttpStatus.OK);
     }
 
     /**
@@ -93,11 +82,7 @@ public class BoardController {
      */
     @DeleteMapping("/boards/{id}")
     public ResponseEntity<Message> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        try {
-            boardService.deleteBoard(id, userDetails.getUser());
-            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
-        }
+        boardService.deleteBoard(id, userDetails.getUser());
+        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
     }
 }

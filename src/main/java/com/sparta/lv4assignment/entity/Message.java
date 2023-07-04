@@ -14,6 +14,17 @@ public class Message {
         this.message = null;
     }
 
+    public Message(String message) {
+        this.status = StatusEnum.BAD_REQUEST;
+        this.data = null;
+        this.message = message;
+    }
+    public Message(String message, Object data) {
+        this.status = StatusEnum.BAD_REQUEST;
+        this.data = data;
+        this.message = message;
+    }
+
     public Message(StatusEnum status, String message, Object data) {
         this.status = status;
         this.data = data;

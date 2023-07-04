@@ -36,12 +36,8 @@ public class CommentController {
             @RequestBody CommentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        try {
             CommentResponseDto commentResponseDto = commentService.updateCommentInBoard(boardId, commentsId, requestDto, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), commentResponseDto), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
-        }
     }
 
     @DeleteMapping("/boards/{boardId}/comments/{commentsId}")
@@ -50,11 +46,7 @@ public class CommentController {
             @PathVariable Long commentsId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        try {
             commentService.deleteCommentInBoard(boardId, commentsId, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new Message(StatusEnum.BAD_REQUEST, e.getMessage(), null), HttpStatus.BAD_REQUEST);
-        }
     }
 }

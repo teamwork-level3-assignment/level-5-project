@@ -46,15 +46,6 @@ public class UserController {
     }
 
 
-//    @PostMapping("/users/login")
-//    public ResponseEntity<LoginResponseDto> login(
-//            HttpServletResponse response,
-//            @RequestBody LoginRequestDto dto
-//    ) {
-//        return userService.login(dto, response);
-//    }
-
-
     private SignupResponseDto makeFieldErrorsMessage(List<FieldError> fieldErrors) {
         Map<String, Object> map = new HashMap<>();
         MultiValueMap<String, String> error = new LinkedMultiValueMap<>();
