@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,12 +25,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.info("JwtAuthorizationFilter.doFilterInternal");
+
         // 토큰 검사 로직
         String tokenFromHeader = jwtUtil.getTokenFromHeader(request);
         if (StringUtils.hasText(tokenFromHeader)) {
-        String token = jwtUtil.substringToken(tokenFromHeader);
+            String token = jwtUtil.substringToken(tokenFromHeader);
 
 
             if (!jwtUtil.validateToken(token)) {
@@ -43,7 +47,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 setAuthentication(username);
             } catch (Exception e) {
                 log.error(e.getMessage());
-                return;
+                throw new UsernameNotFoundException(e.getMessage());
             }
         }
         filterChain.doFilter(request, response);

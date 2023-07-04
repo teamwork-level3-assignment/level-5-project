@@ -2,6 +2,8 @@ package com.sparta.lv4assignment.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.lv4assignment.dto.LoginRequestDto;
+import com.sparta.lv4assignment.entity.Message;
+import com.sparta.lv4assignment.entity.StatusEnum;
 import com.sparta.lv4assignment.entity.UserRoleEnum;
 import com.sparta.lv4assignment.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -10,6 +12,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -19,7 +23,6 @@ import java.io.IOException;
 
 
 @Slf4j
-
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtUtil jwtUtil;
@@ -64,7 +67,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String token = jwtUtil.createToken(username, role);
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
-        System.out.println("JwtAuthenticationFilter.successfulAuthentication  종료");
+
+        // 로그인 성공시 메세지
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("utf-8");
+        response.setStatus(200);
+        Message message = new Message(StatusEnum.OK, "로그인에 성공하였습니다.", null);
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(message));
+
+
     }
 
 
