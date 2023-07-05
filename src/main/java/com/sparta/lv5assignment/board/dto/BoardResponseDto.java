@@ -13,10 +13,11 @@ import java.util.List;
 public class BoardResponseDto {
     private Long id;                    //seq
     private String title;               //제목
-    private String username;                //이름
+    private String username;            //이름
     private String contents;            //내용
     private LocalDateTime createdAt;    //생성날짜
     private LocalDateTime modifiedAt;   //수정날짜
+    private int likes;
 
     private List<CommentResponseDto> commentList = new ArrayList<>();
 
@@ -27,6 +28,7 @@ public class BoardResponseDto {
         this.contents = board.getContents();
         this.createdAt = board.getCreatedAt();
         this.modifiedAt = board.getModifiedAt();
+        this.likes = board.getLikeList().size();
         for (Comment comment : board.getCommentList()) {
             commentList.add(new CommentResponseDto(comment));
         }

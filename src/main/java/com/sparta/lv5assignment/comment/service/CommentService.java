@@ -5,7 +5,6 @@ import com.sparta.lv5assignment.board.entity.Board;
 import com.sparta.lv5assignment.comment.dto.CommentRequestDto;
 import com.sparta.lv5assignment.comment.dto.CommentResponseDto;
 import com.sparta.lv5assignment.comment.entity.Comment;
-import com.sparta.lv5assignment.entity.*;
 import com.sparta.lv5assignment.global.jwt.JwtUtil;
 import com.sparta.lv5assignment.board.repository.BoardRepository;
 import com.sparta.lv5assignment.comment.repository.CommentRepository;

@@ -4,6 +4,7 @@ package com.sparta.lv5assignment.board.entity;
 import com.sparta.lv5assignment.board.dto.BoardRequestDto;
 import com.sparta.lv5assignment.comment.entity.Comment;
 import com.sparta.lv5assignment.global.entity.Timestamped;
+import com.sparta.lv5assignment.like.entity.Like;
 import com.sparta.lv5assignment.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,12 +29,18 @@ public class Board extends Timestamped {
     @Column(name = "contents", nullable = false, length = 500)
     private String contents;
 
+//    @Column(name = "likes")
+//    private int likes;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "board", cascade = {CascadeType.REMOVE})
     private List<Comment> commentList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = {CascadeType.REMOVE})
+    private List<Like> likeList = new ArrayList<>();
 
     public Board(BoardRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();

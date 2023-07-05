@@ -3,7 +3,6 @@ package com.sparta.lv5assignment.board.service;
 import com.sparta.lv5assignment.board.dto.BoardRequestDto;
 import com.sparta.lv5assignment.board.dto.BoardResponseDto;
 import com.sparta.lv5assignment.board.entity.Board;
-import com.sparta.lv5assignment.entity.*;
 import com.sparta.lv5assignment.global.jwt.JwtUtil;
 import com.sparta.lv5assignment.board.repository.BoardRepository;
 import com.sparta.lv5assignment.user.repository.UserRepository;
@@ -123,7 +122,10 @@ public class BoardService {
                 .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
 
         // 글 존재 유무
-        Board board = findBoard(id);
+//        Board board = findBoard(id);
+        Board board = boardRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 글이 존재하지 않습니다.")
+        );
 
         if (findUser.getUsername().equals(board.getUser().getUsername())
                 || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
