@@ -30,7 +30,9 @@ public class BoardResponseDto {
         this.modifiedAt = board.getModifiedAt();
         this.likes = board.getLikeList().size();
         for (Comment comment : board.getCommentList()) {
-            commentList.add(new CommentResponseDto(comment));
+            if (comment.getParent_id() == null) {
+                commentList.add(new CommentResponseDto(comment));
+            }
         }
     }
 

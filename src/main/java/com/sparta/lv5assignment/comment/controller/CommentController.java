@@ -29,6 +29,17 @@ public class CommentController {
         return commentService.createCommentsInBoard(boardId, requestDto, userDetails.getUser());
     }
 
+
+    @PostMapping("/boards/{boardId}/comments/{commentId}")
+    public CommentResponseDto createReplyInComment(
+            @PathVariable Long boardId,
+            @PathVariable Long commentId,
+            @RequestBody CommentRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        return commentService.createReplyInComment(boardId, requestDto, userDetails.getUser(), commentId);
+    }
+
     @PutMapping("/boards/{boardId}/comments/{commentsId}")
     public ResponseEntity<Message> updateCommentsInBoard(
             @PathVariable Long boardId,
@@ -49,4 +60,5 @@ public class CommentController {
             commentService.deleteCommentInBoard(boardId, commentsId, userDetails.getUser());
             return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
     }
+
 }

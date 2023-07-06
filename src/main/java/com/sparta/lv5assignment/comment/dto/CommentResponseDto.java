@@ -4,6 +4,8 @@ import com.sparta.lv5assignment.comment.entity.Comment;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public class CommentResponseDto {
@@ -13,6 +15,7 @@ public class CommentResponseDto {
     private LocalDateTime createAt;
     private LocalDateTime modifiedAt;
     private int likes;
+    private List<CommentResponseDto> children = new ArrayList<>();
 
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
@@ -21,5 +24,7 @@ public class CommentResponseDto {
         this.createAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
         this.likes = comment.getLikeList().size();
+        comment.getChildren().stream()
+                .forEach(a -> children.add(new CommentResponseDto(a)));
     }
 }
