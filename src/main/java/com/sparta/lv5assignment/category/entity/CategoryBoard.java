@@ -22,4 +22,10 @@ public class CategoryBoard {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
+
+    public CategoryBoard(Board saveBoard, Category category) {
+        this.board = saveBoard;
+        this.category = category;
+        board.getCategoryBoardList().add(this); // 연관관계 설정
+    }
 }

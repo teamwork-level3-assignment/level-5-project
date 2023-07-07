@@ -31,7 +31,10 @@ public class BoardController {
      * @return
      */
     @PostMapping("/boards")
-    public ResponseEntity<Message> createBoard(@RequestBody BoardRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<Message> createBoard(
+            @RequestBody BoardRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
         BoardResponseDto board = boardService.createBoard(requestDto, userDetails.getUser());
         return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), board), HttpStatus.OK);
     }
