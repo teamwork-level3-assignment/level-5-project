@@ -2,6 +2,7 @@ package com.sparta.lv5assignment.board.entity;
 
 
 import com.sparta.lv5assignment.board.dto.BoardRequestDto;
+import com.sparta.lv5assignment.category.entity.CategoryBoard;
 import com.sparta.lv5assignment.comment.entity.Comment;
 import com.sparta.lv5assignment.global.entity.Timestamped;
 import com.sparta.lv5assignment.like.entity.Like;
@@ -41,6 +42,9 @@ public class Board extends Timestamped {
 
     @OneToMany(mappedBy = "board", cascade = {CascadeType.REMOVE})
     private List<Like> likeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board")
+    private List<CategoryBoard> categoryBoardList = new ArrayList<>();
 
     public Board(BoardRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();

@@ -1,5 +1,7 @@
 package com.sparta.lv5assignment.board.dto;
 
+import com.sparta.lv5assignment.category.dto.CategoryBoardResponseDto;
+import com.sparta.lv5assignment.category.entity.CategoryBoard;
 import com.sparta.lv5assignment.comment.dto.CommentResponseDto;
 import com.sparta.lv5assignment.board.entity.Board;
 import com.sparta.lv5assignment.comment.entity.Comment;
@@ -21,6 +23,27 @@ public class BoardResponseDto {
 
     private List<CommentResponseDto> commentList = new ArrayList<>();
 
+    private List<CategoryBoardResponseDto> boardInCategoryList = new ArrayList<>();
+
+    public BoardResponseDto(Board board, List<CategoryBoard> categoryBoardList) {
+        this.id = board.getId();
+        this.title = board.getTitle();
+        this.username = board.getUser().getUsername();
+        this.contents = board.getContents();
+        this.createdAt = board.getCreatedAt();
+        this.modifiedAt = board.getModifiedAt();
+        this.likes = board.getLikeList().size();
+        for (Comment comment : board.getCommentList()) {
+            if (comment.getParent_id() == null) {
+                this.commentList.add(new CommentResponseDto(comment));
+            }
+        }
+        for (CategoryBoard categoryBoard : categoryBoardList) {
+            String categoryName = categoryBoard.getCategory().getCategoryName();
+            this.boardInCategoryList.add(new CategoryBoardResponseDto(categoryName));
+        }
+
+    }
     public BoardResponseDto(Board board) {
         this.id = board.getId();
         this.title = board.getTitle();
@@ -33,6 +56,9 @@ public class BoardResponseDto {
             if (comment.getParent_id() == null) {
                 commentList.add(new CommentResponseDto(comment));
             }
+        }
+        for (CategoryBoard categoryBoard : board.getCategoryBoardList()) {
+            boardInCategoryList.add(new CategoryBoardResponseDto(categoryBoard.getCategory().getCategoryName()));
         }
     }
 

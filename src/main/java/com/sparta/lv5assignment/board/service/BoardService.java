@@ -3,17 +3,21 @@ package com.sparta.lv5assignment.board.service;
 import com.sparta.lv5assignment.board.dto.BoardRequestDto;
 import com.sparta.lv5assignment.board.dto.BoardResponseDto;
 import com.sparta.lv5assignment.board.entity.Board;
-import com.sparta.lv5assignment.global.jwt.JwtUtil;
+import com.sparta.lv5assignment.category.entity.Category;
+import com.sparta.lv5assignment.category.entity.CategoryBoard;
+import com.sparta.lv5assignment.category.repository.CategoryBoardRepository;
+import com.sparta.lv5assignment.category.repository.CategoryRepository;
 import com.sparta.lv5assignment.board.repository.BoardRepository;
 import com.sparta.lv5assignment.user.repository.UserRepository;
 import com.sparta.lv5assignment.user.entity.User;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,10 +26,8 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-
-    private final HttpServletRequest req;
-
-    private final JwtUtil jwtUtil;
+    private final CategoryRepository categoryRepository;
+    private final CategoryBoardRepository categoryBoardRepository;
 
     /**
      * 게시판 글 생성
@@ -34,6 +36,7 @@ public class BoardService {
      * @param user
      * @return
      */
+    @Transactional  /* ✨✨✨✨✨✨ throw가 터지면 전부 롤백됨. */
     public BoardResponseDto createBoard(BoardRequestDto requestDto, User user) {
 
         String username = user.getUsername();
@@ -44,10 +47,25 @@ public class BoardService {
                     throw new NullPointerException("해당 사용자가 없습니다");
                 });
 
+        // 등록하고 싶은 카테고리 가지고 오기
+        // 저장하기 : 1. 연관관계의 주인에서 저장을 하던가,   <- 현재는 이 방법을 택함
+        //           2. 아니면 양방향 설정하고 addXxx()라는 별도의 메서드로 그 안에서 연관관계 설정을 하던가
+        List<String> categoryNames = requestDto.getCategoryNames();
+
         // RequestDto -> Entity
         Board board = new Board(requestDto, findUser);
+
         // DB 저장
         Board saveBoard = boardRepository.save(board);
+
+        for (String categoryName : categoryNames) {
+            Category category = categoryRepository.findByCategoryName(categoryName)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다"));
+            // DB 저장
+            categoryBoardRepository.save(new CategoryBoard(saveBoard, category));
+
+        }
+
         // Entity -> ResponseDto
         BoardResponseDto boardResponseDto = new BoardResponseDto(saveBoard);
         return boardResponseDto;
