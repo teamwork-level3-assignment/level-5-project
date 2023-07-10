@@ -4,6 +4,7 @@ package com.sparta.lv5assignment.category.controller;
 import com.sparta.lv5assignment.category.dto.CategoryRequestDto;
 import com.sparta.lv5assignment.category.dto.CategoryResponseDto;
 import com.sparta.lv5assignment.category.service.CategoryService;
+import com.sparta.lv5assignment.global.dto.Message;
 import com.sparta.lv5assignment.global.dto.StatusEnum;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +28,12 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping("/category")
-    public ResponseEntity<List<CategoryResponseDto>> createCategories(
+    public ResponseEntity<Message<List<CategoryResponseDto>>> createCategories(
             @RequestBody CategoryRequestDto categoryRequestDto
     ) {
         List<CategoryResponseDto> categoryResponseDtoList = categoryService.createCategories(categoryRequestDto);
-        return new ResponseEntity<>(categoryResponseDtoList, HttpStatus.CREATED);
+        return ResponseEntity
+                .status(StatusEnum.CREATED_DATA.getStatusCode())
+                .body(Message.success(StatusEnum.SUCCESS.name(), categoryResponseDtoList));
     }
 }

@@ -21,44 +21,54 @@ public class CommentController {
 
 
     @PostMapping("/boards/{boardId}/comments")
-    public CommentResponseDto createCommentsInBoard(
+    public ResponseEntity<Message<CommentResponseDto>> createCommentsInBoard(
             @PathVariable Long boardId,
             @RequestBody CommentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
             ) {
-        return commentService.createCommentsInBoard(boardId, requestDto, userDetails.getUser());
+        CommentResponseDto createdComment = commentService.createCommentsInBoard(boardId, requestDto, userDetails.getUser());
+        return ResponseEntity
+                .status(StatusEnum.CREATED_DATA.getStatusCode())
+                .body(Message.success(StatusEnum.CREATED_DATA.name(), createdComment));
     }
 
 
     @PostMapping("/boards/{boardId}/comments/{commentId}")
-    public CommentResponseDto createReplyInComment(
+    public ResponseEntity<Message<CommentResponseDto>> createReplyInComment(
             @PathVariable Long boardId,
             @PathVariable Long commentId,
             @RequestBody CommentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        return commentService.createReplyInComment(boardId, requestDto, userDetails.getUser(), commentId);
+        CommentResponseDto createdReplyInComment = commentService.createReplyInComment(boardId, requestDto, userDetails.getUser(), commentId);
+        return ResponseEntity
+                .status(StatusEnum.CREATED_DATA.getStatusCode())
+                .body(Message.success(StatusEnum.CREATED_DATA.name(), createdReplyInComment));
     }
 
     @PutMapping("/boards/{boardId}/comments/{commentsId}")
-    public ResponseEntity<Message> updateCommentsInBoard(
+    public ResponseEntity<Message<CommentResponseDto>> updateCommentsInBoard(
             @PathVariable Long boardId,
             @PathVariable Long commentsId,
             @RequestBody CommentRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
             CommentResponseDto commentResponseDto = commentService.updateCommentInBoard(boardId, commentsId, requestDto, userDetails.getUser());
-            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), commentResponseDto), HttpStatus.OK);
+        return ResponseEntity
+                .status(StatusEnum.SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.SUCCESS.name(), commentResponseDto));
     }
 
     @DeleteMapping("/boards/{boardId}/comments/{commentsId}")
-    public ResponseEntity<Message> deleteCommentInBoard(
+    public ResponseEntity<Message<String>> deleteCommentInBoard(
             @PathVariable Long boardId,
             @PathVariable Long commentsId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
             commentService.deleteCommentInBoard(boardId, commentsId, userDetails.getUser());
-            return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
+        return ResponseEntity
+                .status(StatusEnum.DELETE_SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.DELETE_SUCCESS.name(), StatusEnum.DELETE_SUCCESS.getCode()));
     }
 
 }

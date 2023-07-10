@@ -1,33 +1,20 @@
 package com.sparta.lv5assignment.global.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
-public class Message {
-    private StatusEnum status;
+@Getter
+@AllArgsConstructor
+public class Message<T> {
+
     private String message;
-    private Object data;
+    private T data;
 
-    public Message() {
-        this.status = StatusEnum.BAD_REQUEST;
-        this.data = null;
-        this.message = null;
+    public static <T> Message<T> error(String message, T statusEnum) {
+        return new Message<>(message, statusEnum);      // 에러발생 시, 에러코드(HttpStatusCode) 와 메세지
     }
 
-    public Message(String message) {
-        this.status = StatusEnum.BAD_REQUEST;
-        this.data = null;
-        this.message = message;
-    }
-    public Message(String message, Object data) {
-        this.status = StatusEnum.BAD_REQUEST;
-        this.data = data;
-        this.message = message;
-    }
-
-    public Message(StatusEnum status, String message, Object data) {
-        this.status = status;
-        this.data = data;
-        this.message = message;
+    public static <T> Message<T> success(String message, T data) {
+        return new Message<>(message, data);      // 우리가 성공했을때 반환해 주어야 하는 것들.
     }
 }

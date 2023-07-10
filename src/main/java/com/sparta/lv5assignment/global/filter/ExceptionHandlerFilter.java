@@ -35,12 +35,12 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
     private void setErrorResponse(HttpServletResponse response, String msg) {
         try {
-            Message message = new Message(msg);
+            Message<String> message = Message.error(StatusEnum.BAD_REQUEST.name(), msg);
             String messageValue = new ObjectMapper().writeValueAsString(message);
 
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
-            response.setStatus(StatusEnum.BAD_REQUEST.getStatusCode());
+            response.setStatus(StatusEnum.BAD_REQUEST.getStatusCode().value());
             response.getWriter().write(messageValue);
 
         } catch (IOException e) {

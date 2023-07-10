@@ -6,6 +6,7 @@ import com.sparta.lv5assignment.comment.entity.Comment;
 import com.sparta.lv5assignment.comment.repository.CommentRepository;
 import com.sparta.lv5assignment.global.dto.Message;
 import com.sparta.lv5assignment.global.dto.StatusEnum;
+import com.sparta.lv5assignment.global.exception.CustomException;
 import com.sparta.lv5assignment.like.entity.Like;
 import com.sparta.lv5assignment.like.repository.LikeRepository;
 import com.sparta.lv5assignment.user.entity.User;
@@ -30,25 +31,25 @@ public class LikeService {
      * @param boardId
      * @return
      */
-    public Message postLikeInBoard(User user, Long boardId) {
+    public boolean postLikeInBoard(User user, Long boardId) {
 
         User findUser = userRepository.findByUsername(user.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("유저가 존재하지 않습니다.")
+                () -> new CustomException(StatusEnum.NOT_FOUND_USER)
         );
 
         Board board = boardRepository.findById(boardId).orElseThrow(
-                () -> new IllegalArgumentException("해당 게시판이 존재하지 않습니다.")
+                () -> new CustomException(StatusEnum.NOT_FOUND_BOARD)
         );
 
         Optional<Like> like = likeRepository.findByUserAndBoardAndComment(findUser, board, null);
 
         if (like.isPresent()) {
             likeRepository.delete(like.get());
-            return new Message(StatusEnum.OK,"게시판 좋아요 취소 완료", null);
+            return false;
         }else {
 //            boardRepository.save(board);
             likeRepository.save(new Like(findUser, board));
-            return new Message(StatusEnum.OK,"게시판 좋아요 완료", null);
+            return true;
         }
     }
     /**
@@ -58,28 +59,28 @@ public class LikeService {
      * @param commentId
      * @return
      */
-    public Message postLikeInBoardInComment(User user, Long boardId, Long commentId) {
+    public boolean postLikeInBoardInComment(User user, Long boardId, Long commentId) {
 
         User findUser = userRepository.findByUsername(user.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("유저가 존재하지 않습니다.")
+                () -> new CustomException(StatusEnum.NOT_FOUND_USER)
         );
 
         Board board = boardRepository.findById(boardId).orElseThrow(
-                () -> new IllegalArgumentException("해당 게시판이 존재하지 않습니다.")
+                () -> new CustomException(StatusEnum.NOT_FOUND_BOARD)
         );
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new IllegalArgumentException("해당 댓글이 없습니다.")
+                () -> new CustomException(StatusEnum.NOT_FOUND_COMMENT)
         );
 
         Optional<Like> like = likeRepository.findByUserAndComment(findUser, comment);
 
         if (like.isPresent()) {
             likeRepository.delete(like.get());
-            return new Message(StatusEnum.OK,"댓글 좋아요 취소 완료", null);
+            return false;
         }else {
             likeRepository.save(new Like(findUser, comment));
-            return new Message(StatusEnum.OK,"댓글 좋아요 완료", null);
+            return true;
         }
     }
 }

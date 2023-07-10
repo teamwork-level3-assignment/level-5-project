@@ -69,8 +69,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // 로그인 성공시 메세지
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("utf-8");
-        response.setStatus(200);
-        Message message = new Message(StatusEnum.OK, "로그인에 성공하였습니다.", null);
+        response.setStatus(StatusEnum.SUCCESS.getStatusCode().value());
+        Message<String> message = Message.success(StatusEnum.SUCCESS.name(), "로그인에 성공하였습니다.");
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(message));
 

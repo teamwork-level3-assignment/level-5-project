@@ -8,6 +8,8 @@ import com.sparta.lv5assignment.category.entity.CategoryBoard;
 import com.sparta.lv5assignment.category.repository.CategoryBoardRepository;
 import com.sparta.lv5assignment.category.repository.CategoryRepository;
 import com.sparta.lv5assignment.board.repository.BoardRepository;
+import com.sparta.lv5assignment.global.dto.StatusEnum;
+import com.sparta.lv5assignment.global.exception.CustomException;
 import com.sparta.lv5assignment.user.repository.UserRepository;
 import com.sparta.lv5assignment.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +45,7 @@ public class BoardService {
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User findUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    throw new NullPointerException("해당 사용자가 없습니다");
-                });
+                .orElseThrow(() -> new CustomException(StatusEnum.NOT_FOUND_USER));
 
         // 등록하고 싶은 카테고리 가지고 오기
         // 저장하기 : 1. 연관관계의 주인에서 저장을 하던가,   <- 현재는 이 방법을 택함
@@ -60,7 +60,7 @@ public class BoardService {
 
         for (String categoryName : categoryNames) {
             Category category = categoryRepository.findByCategoryName(categoryName)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다"));
+                    .orElseThrow(() -> new CustomException(StatusEnum.NOT_FOUND_CATEGORY));
             // DB 저장
             categoryBoardRepository.save(new CategoryBoard(saveBoard, category));
 
@@ -111,7 +111,7 @@ public class BoardService {
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User findUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+                .orElseThrow(() -> new CustomException(StatusEnum.NOT_FOUND_USER));
 
         // 글 존재 유무
         Board board = findBoard(id);
@@ -120,7 +120,7 @@ public class BoardService {
             board.update(requestDto);
             board = boardRepository.saveAndFlush(board);
         } else {
-            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+            throw new CustomException(StatusEnum.ONLY_CREATER);
         }
         return new BoardResponseDto(board);
     }
@@ -137,19 +137,19 @@ public class BoardService {
 
         // 유저조회 -> board 를 생성할때 누가 생성했는지 알아내기 위해
         User findUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NullPointerException("해당 사용자가 없습니다"));
+                .orElseThrow(() -> new CustomException(StatusEnum.NOT_FOUND_USER));
 
         // 글 존재 유무
 //        Board board = findBoard(id);
         Board board = boardRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 글이 존재하지 않습니다.")
+                new CustomException(StatusEnum.NOT_FOUND_BOARD)
         );
 
         if (findUser.getUsername().equals(board.getUser().getUsername())
                 || findUser.getRole().getAuthority().equals("ROLE_ADMIN")) {
             boardRepository.delete(board);
         } else {
-            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+            throw new CustomException(StatusEnum.ONLY_CREATER);
         }
     }
 
@@ -161,7 +161,7 @@ public class BoardService {
      */
     private Board findBoard(Long id) {
         return boardRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 글이 존재하지 않습니다.")
+                new CustomException(StatusEnum.NOT_FOUND_BOARD)
         );
     }
 }

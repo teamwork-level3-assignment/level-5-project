@@ -1,6 +1,8 @@
 package com.sparta.lv5assignment.user.service;
 
 
+import com.sparta.lv5assignment.global.dto.StatusEnum;
+import com.sparta.lv5assignment.global.exception.CustomException;
 import com.sparta.lv5assignment.user.dto.LoginRequestDto;
 import com.sparta.lv5assignment.user.dto.LoginResponseDto;
 import com.sparta.lv5assignment.user.dto.SignupRequestDto;
@@ -49,7 +51,7 @@ public class UserService {
 
             return new ResponseEntity<>(new SignupResponseDto("회원가입 성공", HttpServletResponse.SC_OK), HttpStatus.OK);
         }
-        throw new IllegalArgumentException("중복된 사용자가 존재합니다");
+        throw new CustomException(StatusEnum.DUPLICATED_USER);
     }
 
     public ResponseEntity<LoginResponseDto> login(LoginRequestDto dto, HttpServletResponse response) {
@@ -58,11 +60,11 @@ public class UserService {
 
         // username 찾기
         User findUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("등록된 사용자가 없습니다."));
+                .orElseThrow(() -> new CustomException(StatusEnum.NOT_FOUND_USER));
 
         // 비밀번호 일치여부 확인
         if (!passwordEncoder.matches(password, findUser.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+            throw new CustomException(StatusEnum.PASSWORD_NOT_MATCHED);
         }
 
         // 토큰 만들기 -> 저장해서 보내기

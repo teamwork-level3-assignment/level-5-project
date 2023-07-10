@@ -2,6 +2,7 @@ package com.sparta.lv5assignment.global.exception;
 
 
 import com.sparta.lv5assignment.global.dto.Message;
+import com.sparta.lv5assignment.global.dto.StatusEnum;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,16 +12,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler({NullPointerException.class})
-    public ResponseEntity<Message> nullPointExceptionHandler(NullPointerException exception) {
-        Message message = new Message(exception.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<Message> nullPointExceptionHandler(IllegalArgumentException exception) {
-        Message message = new Message(exception.getMessage(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler({RuntimeException.class})
+    public ResponseEntity<Message<String>> customExceptionHandler(CustomException exception) {
+        return ResponseEntity
+                .status(exception.getStatusEnum().getStatusCode())
+                .body(Message.error(exception.getStatusEnum().name(), exception.getStatusEnum().getCode()));
     }
 
     @ExceptionHandler({Exception.class})

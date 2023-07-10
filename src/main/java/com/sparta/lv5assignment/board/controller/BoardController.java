@@ -6,6 +6,7 @@ import com.sparta.lv5assignment.global.dto.Message;
 import com.sparta.lv5assignment.global.dto.StatusEnum;
 import com.sparta.lv5assignment.global.filter.UserDetailsImpl;
 import com.sparta.lv5assignment.board.service.BoardService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,14 +16,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-
+@RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
-
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     /**
      * 게시판 글 생성
@@ -31,12 +28,14 @@ public class BoardController {
      * @return
      */
     @PostMapping("/boards")
-    public ResponseEntity<Message> createBoard(
+    public ResponseEntity<Message<BoardResponseDto>> createBoard(
             @RequestBody BoardRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         BoardResponseDto board = boardService.createBoard(requestDto, userDetails.getUser());
-        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), board), HttpStatus.OK);
+        return ResponseEntity
+                .status(StatusEnum.CREATED_DATA.getStatusCode())
+                .body(Message.success(StatusEnum.CREATED_DATA.name(), board));
     }
 
     /**
@@ -46,8 +45,11 @@ public class BoardController {
      * @return
      */
     @GetMapping("/boards/{id}")
-    public BoardResponseDto getBoard(@PathVariable Long id) {
-        return boardService.getBoard(id);
+    public ResponseEntity<Message<BoardResponseDto>> getBoard(@PathVariable Long id) {
+        BoardResponseDto findBoard = boardService.getBoard(id);
+        return ResponseEntity
+                .status(StatusEnum.SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.SUCCESS.name(), findBoard));
     }
 
     /**
@@ -56,8 +58,11 @@ public class BoardController {
      * @return
      */
     @GetMapping("/boards")
-    public List<BoardResponseDto> getBoardlist() {
-        return boardService.getBoardlist();
+    public ResponseEntity<Message<List<BoardResponseDto>>> getBoardlist() {
+        List<BoardResponseDto> boardlist = boardService.getBoardlist();
+        return ResponseEntity
+                .status(StatusEnum.SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.SUCCESS.name(), boardlist));
     }
 
     /**
@@ -68,13 +73,15 @@ public class BoardController {
      * @return
      */
     @PutMapping("/boards/{id}")
-    public ResponseEntity<Message> updateBoard(
+    public ResponseEntity<Message<BoardResponseDto>> updateBoard(
             @PathVariable Long id,
             @RequestBody BoardRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         BoardResponseDto boardResponseDto = boardService.updateBoard(id, requestDto, userDetails.getUser());
-        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), boardResponseDto), HttpStatus.OK);
+        return ResponseEntity
+                .status(StatusEnum.SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.SUCCESS.name(), boardResponseDto));
     }
 
     /**
@@ -84,8 +91,10 @@ public class BoardController {
      * @return
      */
     @DeleteMapping("/boards/{id}")
-    public ResponseEntity<Message> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<Message<String>> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         boardService.deleteBoard(id, userDetails.getUser());
-        return new ResponseEntity<>(new Message(StatusEnum.OK, StatusEnum.OK.getCode(), null), HttpStatus.OK);
+        return ResponseEntity
+                .status(StatusEnum.DELETE_SUCCESS.getStatusCode())
+                .body(Message.success(StatusEnum.DELETE_SUCCESS.name(), StatusEnum.DELETE_SUCCESS.getCode()));
     }
 }
